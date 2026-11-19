@@ -2,7 +2,9 @@
     <application android:theme="@style/Theme.BilingualQuiz" android:label="Bilingual Quiz" android:allowBackup="true">
         <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
         <activity android:name=".ui.QuizActivity" /><activity android:name=".ui.GradeSelectionActivity" /><activity android:name=".ui.StatisticsActivity" />
-            <activity android:name=".ui.WrongQuestionsActivity" />`r`n    </application>
+        <activity android:name=".ui.WrongQuestionsActivity" />
+        <activity android:name=".ui.HistoryActivity" />
+    </application>
 </manifest>
 
 
