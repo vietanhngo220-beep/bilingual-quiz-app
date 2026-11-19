@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ScrollView;
+import android.widget.ProgressBar;
 import com.vietanh.bilingualquiz.data.QuizDbHelper;
 import com.vietanh.bilingualquiz.LanguageSettings;
 
@@ -21,6 +22,8 @@ public class StatisticsActivity extends Activity {
     private int selectedGrade;
     private TextView summary;
     private TextView empty;
+    private TextView accuracySummary;
+    private ProgressBar accuracyProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,18 @@ public class StatisticsActivity extends Activity {
         summary.setTextSize(19);
         summary.setTextColor(Color.DKGRAY);
         screen.addView(summary);
+
+        accuracySummary = new TextView(this);
+        accuracySummary.setTextSize(19);
+        accuracySummary.setTextColor(Color.DKGRAY);
+        accuracySummary.setPadding(0, dp(16), 0, dp(8));
+        screen.addView(accuracySummary);
+
+        accuracyProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        accuracyProgress.setMax(1000);
+        screen.addView(accuracyProgress, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(12)));
+
         empty = new TextView(this);
         empty.setTextSize(16);
         empty.setPadding(0, dp(12), 0, dp(12));
@@ -122,6 +137,20 @@ public class StatisticsActivity extends Activity {
         QuizDbHelper database = new QuizDbHelper(this);
         try (Cursor result = database.getStatistics(selectedGrade)) {
             if (result.moveToFirst()) {
+                long correct = result.getLong(1);
+                long total = result.getLong(4);
+                double accuracy = total > 0 ? 100.0 * correct / total : 0.0;
+                String accuracyText = format(accuracy) + "%";
+                accuracySummary.setText(vi
+                        ? "Tổng số câu đã trả lời: " + total
+                                + "\n\nSố câu đúng: " + correct
+                                + "\n\nTỉ lệ trả lời đúng: " + accuracyText
+                        : "Total questions answered: " + total
+                                + "\n\nCorrect answers: " + correct
+                                + "\n\nAccuracy: " + accuracyText);
+                accuracyProgress.setProgress((int) Math.round(accuracy * 10));
+                accuracyProgress.setContentDescription((vi ? "Tỉ lệ trả lời đúng: " : "Accuracy: ")
+                        + accuracyText);
                 summary.setText(vi ? "\nSố bài đã làm: " + result.getInt(0)
                         + "\n\nTổng điểm: " + result.getInt(1)
                         + "\n\nĐiểm trung bình: " + format(result.getDouble(2))

@@ -74,14 +74,15 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         return getInt("SELECT COALESCE(MAX(score), 0) FROM attempts");
     }
 
-    /** One consistent summary: count, total score, average score, highest score. */
+    /** Summary columns: count, total score, average score, highest score, total questions. */
     public android.database.Cursor getStatistics(int grade) {
         if (grade < 0 || grade > 12) {
             throw new IllegalArgumentException("Grade must be 0 or between 1 and 12");
         }
         return getReadableDatabase().rawQuery(
                 "SELECT COUNT(*), COALESCE(SUM(score), 0), " +
-                "COALESCE(AVG(CAST(score AS REAL)), 0), COALESCE(MAX(score), 0) " +
+                "COALESCE(AVG(CAST(score AS REAL)), 0), COALESCE(MAX(score), 0), " +
+                "COALESCE(SUM(total), 0) " +
                 "FROM attempts" + (grade == 0 ? "" : " WHERE grade = ?"),
                 grade == 0 ? null : new String[]{String.valueOf(grade)});
     }
