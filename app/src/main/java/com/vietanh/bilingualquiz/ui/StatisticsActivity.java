@@ -34,7 +34,7 @@ public class StatisticsActivity extends Activity {
         summary.setTextColor(Color.DKGRAY);
         screen.addView(summary);
 
-        Button refresh = new Button(this);
+        Button wrongQuestions = new Button(this);\n        wrongQuestions.setText("Xem câu sai / Review wrong questions");\n        wrongQuestions.setOnClickListener(view -> startActivity(new android.content.Intent(this, WrongQuestionsActivity.class)));\n        screen.addView(wrongQuestions);\n\n        Button refresh = new Button(this);
         refresh.setText("Cập nhật thống kê / Refresh");
         refresh.setOnClickListener(view -> recreate());
         screen.addView(refresh);
@@ -45,3 +45,4 @@ public class StatisticsActivity extends Activity {
         return String.format(java.util.Locale.US, "%.1f", value);
     }
 }
+
