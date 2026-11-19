@@ -53,4 +53,32 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         values.put("created_at", System.currentTimeMillis());
         return getWritableDatabase().insert("wrong_questions", null, values);
     }
+    public int getAttemptCount() {
+        return getInt("SELECT COUNT(*) FROM attempts");
+    }
+
+    public int getTotalScore() {
+        return getInt("SELECT COALESCE(SUM(score), 0) FROM attempts");
+    }
+
+    public double getAverageScore() {
+        android.database.Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT COALESCE(AVG(CAST(score AS REAL)), 0) FROM attempts", null);
+        double value = 0;
+        if (cursor.moveToFirst()) value = cursor.getDouble(0);
+        cursor.close();
+        return value;
+    }
+
+    public int getHighestScore() {
+        return getInt("SELECT COALESCE(MAX(score), 0) FROM attempts");
+    }
+
+    private int getInt(String query) {
+        android.database.Cursor cursor = getReadableDatabase().rawQuery(query, null);
+        int value = 0;
+        if (cursor.moveToFirst()) value = cursor.getInt(0);
+        cursor.close();
+        return value;
+    }
 }
