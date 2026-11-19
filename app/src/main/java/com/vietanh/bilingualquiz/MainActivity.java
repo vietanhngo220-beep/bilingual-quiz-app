@@ -1,17 +1,3 @@
 package com.vietanh.bilingualquiz;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.widget.TextView;
-
-public class MainActivity extends Activity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        TextView title = new TextView(this);
-        title.setText("Bilingual Quiz\n\nÔn tập trắc nghiệm song ngữ");
-        title.setTextSize(24);
-        title.setPadding(48, 96, 48, 48);
-        setContentView(title);
-    }
-}
+import android.app.Activity; import android.content.Intent; import android.os.Bundle; import android.graphics.Color; import android.view.Gravity; import android.widget.*; import com.vietanh.bilingualquiz.ui.QuizActivity; import com.vietanh.bilingualquiz.ui.StatisticsActivity;
+public class MainActivity extends Activity { @Override protected void onCreate(Bundle b){super.onCreate(b); LinearLayout root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setGravity(Gravity.CENTER); root.setPadding(48,64,48,64); TextView t=new TextView(this); t.setText("Bilingual Quiz\nÔn tập trắc nghiệm song ngữ"); t.setTextSize(24); t.setGravity(Gravity.CENTER); t.setTextColor(Color.rgb(20,60,120)); root.addView(t); int[] gs={8,11,12}; String[] labels={"Lớp 8 / Grade 8","Lớp 11 / Grade 11","Lớp 12 / Grade 12"}; for(int i=0;i<3;i++){ final int g=gs[i]; Button x=new Button(this); x.setText(labels[i]); x.setOnClickListener(v->{Intent it=new Intent(this,QuizActivity.class); it.putExtra("grade",g); startActivity(it);}); root.addView(x);} Button s=new Button(this); s.setText("Thống kê / Statistics"); s.setOnClickListener(v->startActivity(new Intent(this,StatisticsActivity.class))); root.addView(s); setContentView(root);}}
