@@ -43,6 +43,22 @@ public class Question {
         return options[correctIndex];
     }
 
+    /** Returns the option in the selected language for the current sample/data format. */
+    public String getOption(int index, boolean vietnamese) {
+        if (options == null || index < 0 || index >= options.length || options[index] == null) {
+            return "";
+        }
+        String[] parts = options[index].split("\\s*/\\s*", 2);
+        if (parts.length < 2) {
+            return options[index];
+        }
+        return vietnamese ? parts[0].trim() : parts[1].trim();
+    }
+
+    public String getCorrectAnswer(boolean vietnamese) {
+        return getOption(correctIndex, vietnamese);
+    }
+
     @Override
     public String toString() {
         return "Question{" +

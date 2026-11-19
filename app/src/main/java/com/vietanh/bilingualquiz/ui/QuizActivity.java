@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.widget.*;
+import com.vietanh.bilingualquiz.LanguageSettings;
 import com.vietanh.bilingualquiz.data.QuestionRepository;
 import com.vietanh.bilingualquiz.data.QuizDbHelper;
 import com.vietanh.bilingualquiz.model.Question;
@@ -15,8 +16,7 @@ public class QuizActivity extends Activity {
     LinearLayout root;
     TextView title, prompt;
     RadioGroup choices;
-    Button languageToggle, submit;
-    boolean vietnamese = true;
+    Button submit;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,31 +38,24 @@ public class QuizActivity extends Activity {
         root.addView(title);
 
         prompt = new TextView(this);
-        prompt.setText(question.questionVi);
+        boolean vietnamese = LanguageSettings.isVietnamese(this);
+        title.setText(vietnamese ? "Ôn tập lớp " + grade : "Practice grade " + grade);
+        prompt.setText(vietnamese ? question.questionVi : question.questionEn);
         prompt.setTextSize(18);
         prompt.setPadding(0, 40, 0, 20);
         root.addView(prompt);
 
-        languageToggle = new Button(this);
-        languageToggle.setText("English");
-        languageToggle.setOnClickListener(view -> {
-            vietnamese = !vietnamese;
-            prompt.setText(vietnamese ? question.questionVi : question.questionEn);
-            languageToggle.setText(vietnamese ? "English" : "Tiếng Việt");
-        });
-        root.addView(languageToggle);
-
         choices = new RadioGroup(this);
-        for (String option : question.options) {
+        for (int index = 0; index < question.options.length; index++) {
             RadioButton choice = new RadioButton(this);
-            choice.setText(option);
+            choice.setText(question.getOption(index, vietnamese));
             choice.setTextSize(16);
             choices.addView(choice);
         }
         root.addView(choices);
 
         submit = new Button(this);
-        submit.setText("Nộp bài / Submit");
+        submit.setText(vietnamese ? "Nộp bài" : "Submit");
         submit.setOnClickListener(view -> submitAnswer());
         root.addView(submit);
         setContentView(root);
@@ -71,7 +64,8 @@ public class QuizActivity extends Activity {
     private void submitAnswer() {
         int checkedId = choices.getCheckedRadioButtonId();
         if (checkedId == -1) {
-            Toast.makeText(this, "Hãy chọn một đáp án trước.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, LanguageSettings.isVietnamese(this)
+                    ? "Hãy chọn một đáp án trước." : "Choose an answer first.", Toast.LENGTH_SHORT).show();
             return;
         }
         RadioButton selected = findViewById(checkedId);
@@ -83,12 +77,15 @@ public class QuizActivity extends Activity {
         database.saveAttempt(grade, score, 1);
         if (!correct) {
             database.saveWrongQuestion(question.id, grade, question.questionVi,
-                    question.questionEn, question.getCorrectAnswer());
+                    question.questionEn, question.getCorrectAnswer(LanguageSettings.isVietnamese(this)));
         }
-        Toast.makeText(this, "Đã lưu kết quả: " + score + "/1", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, (LanguageSettings.isVietnamese(this)
+                ? "Đã lưu kết quả: " : "Result saved: ") + score + "/1", Toast.LENGTH_LONG).show();
         finish();
     }
 }
+
+
 
 
 
