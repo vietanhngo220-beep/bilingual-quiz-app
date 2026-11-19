@@ -74,13 +74,6 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         return getInt("SELECT COALESCE(MAX(score), 0) FROM attempts");
     }
 
-    public android.database.Cursor getAttemptHistory() {
-        return getReadableDatabase().query(
-                "attempts",
-                new String[]{"grade", "score", "total", "created_at"},
-                null, null, null, null, "created_at DESC");
-    }
-
     private int getInt(String query) {
         android.database.Cursor cursor = getReadableDatabase().rawQuery(query, null);
         int value = 0;

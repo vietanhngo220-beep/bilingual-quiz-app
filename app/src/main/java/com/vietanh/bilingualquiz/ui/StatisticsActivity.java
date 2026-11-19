@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.ScrollView;
 import com.vietanh.bilingualquiz.data.QuizDbHelper;
 import com.vietanh.bilingualquiz.LanguageSettings;
 
@@ -16,11 +15,9 @@ public class StatisticsActivity extends Activity {
         super.onCreate(savedInstanceState);
         QuizDbHelper database = new QuizDbHelper(this);
         boolean vi = LanguageSettings.isVietnamese(this);
-        ScrollView scroll = new ScrollView(this);
         LinearLayout screen = new LinearLayout(this);
         screen.setOrientation(LinearLayout.VERTICAL);
         screen.setPadding(40, 48, 40, 40);
-        scroll.addView(screen);
 
         TextView title = new TextView(this);
         title.setText(vi ? "Thống kê kết quả" : "Statistics");
@@ -41,11 +38,6 @@ public class StatisticsActivity extends Activity {
         summary.setTextColor(Color.DKGRAY);
         screen.addView(summary);
 
-        Button historyButton = new Button(this);
-        historyButton.setText(vi ? "Lịch sử làm bài" : "Quiz history");
-        historyButton.setOnClickListener(view -> startActivity(
-                new android.content.Intent(this, HistoryActivity.class)));
-        screen.addView(historyButton);
         Button wrongQuestions = new Button(this);
         wrongQuestions.setText(vi ? "Xem câu sai" : "Review wrong questions");
         wrongQuestions.setOnClickListener(view -> startActivity(
@@ -56,7 +48,7 @@ public class StatisticsActivity extends Activity {
         refresh.setText(vi ? "Cập nhật thống kê" : "Refresh");
         refresh.setOnClickListener(view -> recreate());
         screen.addView(refresh);
-        setContentView(scroll);
+        setContentView(screen);
     }
 
     private String format(double value) {
