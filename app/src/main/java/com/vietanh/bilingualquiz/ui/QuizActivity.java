@@ -15,7 +15,7 @@ public class QuizActivity extends Activity {
     LinearLayout root;
     TextView title, prompt;
     RadioGroup choices;
-    Button submit;
+    Button languageToggle, submit;\n    boolean vietnamese = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,3 +79,4 @@ public class QuizActivity extends Activity {
         finish();
     }
 }
+
