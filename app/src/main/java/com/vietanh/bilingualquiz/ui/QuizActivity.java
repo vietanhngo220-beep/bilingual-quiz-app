@@ -73,11 +73,13 @@ public class QuizActivity extends Activity {
         boolean correct = question.isCorrect(selectedIndex);
         score = correct ? 1 : 0;
 
-        QuizDbHelper database = new QuizDbHelper(this);
-        database.saveAttempt(grade, score, 1);
-        if (!correct) {
-            database.saveWrongQuestion(question.id, grade, question.questionVi,
-                    question.questionEn, question.getCorrectAnswer(LanguageSettings.isVietnamese(this)));
+        try (QuizDbHelper database = new QuizDbHelper(this)) {
+            database.saveAttempt(grade, score, 1);
+            if (!correct) {
+                database.saveWrongQuestion(question.id, grade, question.questionVi,
+                        question.questionEn, question.getCorrectAnswer(true),
+                        question.getCorrectAnswer(false));
+            }
         }
         Toast.makeText(this, (LanguageSettings.isVietnamese(this)
                 ? "Đã lưu kết quả: " : "Result saved: ") + score + "/1", Toast.LENGTH_LONG).show();

@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 /** Stores quiz attempts and questions answered incorrectly. */
 public class QuizDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "bilingual_quiz.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public QuizDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -23,14 +23,16 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE wrong_questions (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, question_id INTEGER NOT NULL, " +
                 "grade INTEGER NOT NULL, question_vi TEXT NOT NULL, question_en TEXT, " +
-                "correct_answer TEXT, created_at INTEGER NOT NULL)");
+                "correct_answer TEXT, correct_answer_vi TEXT, correct_answer_en TEXT, " +
+                "created_at INTEGER NOT NULL)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS attempts");
-        db.execSQL("DROP TABLE IF EXISTS wrong_questions");
-        onCreate(db);
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_vi TEXT");
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_en TEXT");
+        }
     }
 
     public long saveAttempt(int grade, int score, int total) {
@@ -44,12 +46,27 @@ public class QuizDbHelper extends SQLiteOpenHelper {
 
     public long saveWrongQuestion(int questionId, int grade, String questionVi,
                                   String questionEn, String correctAnswer) {
+        return saveWrongQuestionValues(questionId, grade, questionVi, questionEn,
+                correctAnswer, null, null);
+    }
+
+    public long saveWrongQuestion(int questionId, int grade, String questionVi,
+                                  String questionEn, String correctAnswerVi, String correctAnswerEn) {
+        return saveWrongQuestionValues(questionId, grade, questionVi, questionEn,
+                correctAnswerVi, correctAnswerVi, correctAnswerEn);
+    }
+
+    private long saveWrongQuestionValues(int questionId, int grade, String questionVi,
+                                         String questionEn, String legacyAnswer,
+                                         String correctAnswerVi, String correctAnswerEn) {
         ContentValues values = new ContentValues();
         values.put("question_id", questionId);
         values.put("grade", grade);
         values.put("question_vi", questionVi);
         values.put("question_en", questionEn);
-        values.put("correct_answer", correctAnswer);
+        values.put("correct_answer", legacyAnswer);
+        values.put("correct_answer_vi", correctAnswerVi);
+        values.put("correct_answer_en", correctAnswerEn);
         values.put("created_at", System.currentTimeMillis());
         return getWritableDatabase().insert("wrong_questions", null, values);
     }
@@ -122,7 +139,8 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         }
         return getReadableDatabase().query(
                 "wrong_questions",
-                new String[]{"question_id", "grade", "question_vi", "question_en", "correct_answer"},
+                new String[]{"question_id", "grade", "question_vi", "question_en", "correct_answer",
+                        "correct_answer_vi", "correct_answer_en"},
                 grade == 0 ? null : "grade = ?",
                 grade == 0 ? null : new String[]{String.valueOf(grade)},
                 null, null, "created_at DESC, id DESC");
