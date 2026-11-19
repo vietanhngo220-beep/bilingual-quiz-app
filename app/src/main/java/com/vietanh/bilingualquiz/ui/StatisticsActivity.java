@@ -3,7 +3,6 @@ package com.vietanh.bilingualquiz.ui;
 import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
-import android.view.Gravity;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,25 +24,18 @@ public class StatisticsActivity extends Activity {
         screen.addView(title);
 
         TextView summary = new TextView(this);
-        summary.setText("
-" +
-                "Số bài đã làm: " + database.getAttemptCount() + "
-
-" +
-                "Tổng điểm: " + database.getTotalScore() + "
-
-" +
-                "Điểm trung bình: " + format(database.getAverageScore()) + "
-
-" +
-                "Điểm cao nhất: " + database.getHighestScore());
+        summary.setText("\nSố bài đã làm: " + database.getAttemptCount()
+                + "\n\nTổng điểm: " + database.getTotalScore()
+                + "\n\nĐiểm trung bình: " + format(database.getAverageScore())
+                + "\n\nĐiểm cao nhất: " + database.getHighestScore());
         summary.setTextSize(19);
         summary.setTextColor(Color.DKGRAY);
         screen.addView(summary);
 
         Button wrongQuestions = new Button(this);
         wrongQuestions.setText("Xem câu sai / Review wrong questions");
-        wrongQuestions.setOnClickListener(view -> startActivity(new android.content.Intent(this, WrongQuestionsActivity.class)));
+        wrongQuestions.setOnClickListener(view -> startActivity(
+                new android.content.Intent(this, WrongQuestionsActivity.class)));
         screen.addView(wrongQuestions);
 
         Button refresh = new Button(this);
@@ -57,5 +49,3 @@ public class StatisticsActivity extends Activity {
         return String.format(java.util.Locale.US, "%.1f", value);
     }
 }
-
-
