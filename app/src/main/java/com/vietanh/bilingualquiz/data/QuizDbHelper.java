@@ -75,10 +75,20 @@ public class QuizDbHelper extends SQLiteOpenHelper {
     }
 
     public android.database.Cursor getAttemptHistory() {
+        return getAttemptHistory(0);
+    }
+
+    /** Grade 0 returns all attempts; grades 1–12 return only that grade. */
+    public android.database.Cursor getAttemptHistory(int grade) {
+        if (grade < 0 || grade > 12) {
+            throw new IllegalArgumentException("Grade must be 0 or between 1 and 12");
+        }
         return getReadableDatabase().query(
                 "attempts",
                 new String[]{"grade", "score", "total", "created_at"},
-                null, null, null, null, "created_at DESC");
+                grade == 0 ? null : "grade = ?",
+                grade == 0 ? null : new String[]{String.valueOf(grade)},
+                null, null, "created_at DESC, id DESC");
     }
 
     private int getInt(String query) {
