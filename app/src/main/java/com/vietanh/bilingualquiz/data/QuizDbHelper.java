@@ -99,9 +99,19 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         return value;
     }
     public android.database.Cursor getWrongQuestions() {
+        return getWrongQuestions(0);
+    }
+
+    /** Grade 0 returns all wrong answers; grades 1–12 filter by grade. */
+    public android.database.Cursor getWrongQuestions(int grade) {
+        if (grade < 0 || grade > 12) {
+            throw new IllegalArgumentException("Grade must be 0 or between 1 and 12");
+        }
         return getReadableDatabase().query(
                 "wrong_questions",
                 new String[]{"question_id", "grade", "question_vi", "question_en", "correct_answer"},
-                null, null, null, null, "created_at DESC");
+                grade == 0 ? null : "grade = ?",
+                grade == 0 ? null : new String[]{String.valueOf(grade)},
+                null, null, "created_at DESC, id DESC");
     }
 }
