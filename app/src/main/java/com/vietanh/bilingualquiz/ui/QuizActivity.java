@@ -15,7 +15,7 @@ public class QuizActivity extends Activity {
     LinearLayout root;
     TextView title, prompt;
     RadioGroup choices;
-    Button languageToggle, submit;\n    boolean vietnamese = true;
+    Button languageToggle, submit;`r`n    boolean vietnamese = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,10 +37,10 @@ public class QuizActivity extends Activity {
         root.addView(title);
 
         prompt = new TextView(this);
-        prompt.setText(question.questionVi + "\n" + question.questionEn);
+        prompt.setText(question.questionVi);
         prompt.setTextSize(18);
         prompt.setPadding(0, 40, 0, 20);
-        root.addView(prompt);
+        root.addView(prompt);`r`n`r`n        languageToggle = new Button(this);`r`n        languageToggle.setText("English");`r`n        languageToggle.setOnClickListener(view -> {`r`n            vietnamese = !vietnamese;`r`n            prompt.setText(vietnamese ? question.questionVi : question.questionEn);`r`n            languageToggle.setText(vietnamese ? "English" : "Tiếng Việt");`r`n        });`r`n        root.addView(languageToggle);
 
         choices = new RadioGroup(this);
         for (String option : question.options) {
@@ -79,4 +79,5 @@ public class QuizActivity extends Activity {
         finish();
     }
 }
+
 
