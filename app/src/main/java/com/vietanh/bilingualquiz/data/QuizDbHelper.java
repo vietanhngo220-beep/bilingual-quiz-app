@@ -81,4 +81,10 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         cursor.close();
         return value;
     }
+    public android.database.Cursor getWrongQuestions() {
+        return getReadableDatabase().query(
+                "wrong_questions",
+                new String[]{"question_id", "grade", "question_vi", "question_en", "correct_answer"},
+                null, null, null, null, "created_at DESC");
+    }
 }
