@@ -25,16 +25,28 @@ public class StatisticsActivity extends Activity {
         screen.addView(title);
 
         TextView summary = new TextView(this);
-        summary.setText("\n" +
-                "Số bài đã làm: " + database.getAttemptCount() + "\n\n" +
-                "Tổng điểm: " + database.getTotalScore() + "\n\n" +
-                "Điểm trung bình: " + format(database.getAverageScore()) + "\n\n" +
+        summary.setText("
+" +
+                "Số bài đã làm: " + database.getAttemptCount() + "
+
+" +
+                "Tổng điểm: " + database.getTotalScore() + "
+
+" +
+                "Điểm trung bình: " + format(database.getAverageScore()) + "
+
+" +
                 "Điểm cao nhất: " + database.getHighestScore());
         summary.setTextSize(19);
         summary.setTextColor(Color.DKGRAY);
         screen.addView(summary);
 
-        Button wrongQuestions = new Button(this);\n        wrongQuestions.setText("Xem câu sai / Review wrong questions");\n        wrongQuestions.setOnClickListener(view -> startActivity(new android.content.Intent(this, WrongQuestionsActivity.class)));\n        screen.addView(wrongQuestions);\n\n        Button refresh = new Button(this);
+        Button wrongQuestions = new Button(this);
+        wrongQuestions.setText("Xem câu sai / Review wrong questions");
+        wrongQuestions.setOnClickListener(view -> startActivity(new android.content.Intent(this, WrongQuestionsActivity.class)));
+        screen.addView(wrongQuestions);
+
+        Button refresh = new Button(this);
         refresh.setText("Cập nhật thống kê / Refresh");
         refresh.setOnClickListener(view -> recreate());
         screen.addView(refresh);
@@ -45,4 +57,5 @@ public class StatisticsActivity extends Activity {
         return String.format(java.util.Locale.US, "%.1f", value);
     }
 }
+
 
