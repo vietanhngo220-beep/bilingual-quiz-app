@@ -78,7 +78,8 @@ public class QuizActivity extends Activity {
             if (!correct) {
                 database.saveWrongQuestion(question.id, grade, question.questionVi,
                         question.questionEn, question.getCorrectAnswer(true),
-                        question.getCorrectAnswer(false));
+                        question.getCorrectAnswer(false), question.getExplanation(true),
+                        question.getExplanation(false));
             }
         }
         Toast.makeText(this, (LanguageSettings.isVietnamese(this)

@@ -13,6 +13,6 @@ public class QuestionRepository {
         Question q = new Question(); q.id=1; q.grade=grade; q.subject="General";
         q.questionVi="Mẫu câu hỏi cho lớp "+grade+" là gì?"; q.questionEn="What is this sample question for grade "+grade+"?";
         q.options=new String[]{"Đáp án A / Answer A","Đáp án B / Answer B","Đáp án C / Answer C","Đáp án D / Answer D"}; q.correctIndex=0;
-        q.explanation="Dữ liệu mẫu để nhóm thay bằng 300 câu hỏi JSON."; list.add(q); return list;
+        q.explanation="Dữ liệu mẫu để nhóm thay bằng 300 câu hỏi JSON."; q.explanationVi=q.explanation; q.explanationEn="Sample data for the team to replace with 300 JSON questions."; list.add(q); return list;
     }
 }

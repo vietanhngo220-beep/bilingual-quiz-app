@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 /** Stores quiz attempts and questions answered incorrectly. */
 public class QuizDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "bilingual_quiz.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public QuizDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -24,6 +24,7 @@ public class QuizDbHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, question_id INTEGER NOT NULL, " +
                 "grade INTEGER NOT NULL, question_vi TEXT NOT NULL, question_en TEXT, " +
                 "correct_answer TEXT, correct_answer_vi TEXT, correct_answer_en TEXT, " +
+                "explanation_vi TEXT, explanation_en TEXT, " +
                 "created_at INTEGER NOT NULL)");
     }
 
@@ -32,6 +33,10 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         if (oldVersion < 2) {
             db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_vi TEXT");
             db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_en TEXT");
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN explanation_vi TEXT");
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN explanation_en TEXT");
         }
     }
 
@@ -56,19 +61,57 @@ public class QuizDbHelper extends SQLiteOpenHelper {
                 correctAnswerVi, correctAnswerVi, correctAnswerEn);
     }
 
+    public long saveWrongQuestion(int questionId, int grade, String questionVi,
+                                  String questionEn, String correctAnswerVi, String correctAnswerEn,
+                                  String explanationVi, String explanationEn) {
+        return saveWrongQuestionValues(questionId, grade, questionVi, questionEn,
+                correctAnswerVi, correctAnswerVi, correctAnswerEn, explanationVi, explanationEn);
+    }
+
     private long saveWrongQuestionValues(int questionId, int grade, String questionVi,
                                          String questionEn, String legacyAnswer,
                                          String correctAnswerVi, String correctAnswerEn) {
+        return saveWrongQuestionValues(questionId, grade, questionVi, questionEn,
+                legacyAnswer, correctAnswerVi, correctAnswerEn, null, null);
+    }
+
+    private long saveWrongQuestionValues(int questionId, int grade, String questionVi,
+                                         String questionEn, String legacyAnswer,
+                                         String correctAnswerVi, String correctAnswerEn,
+                                         String explanationVi, String explanationEn) {
         ContentValues values = new ContentValues();
         values.put("question_id", questionId);
         values.put("grade", grade);
         values.put("question_vi", questionVi);
         values.put("question_en", questionEn);
         values.put("correct_answer", legacyAnswer);
-        values.put("correct_answer_vi", correctAnswerVi);
-        values.put("correct_answer_en", correctAnswerEn);
+        if (correctAnswerVi != null) values.put("correct_answer_vi", correctAnswerVi);
+        if (correctAnswerEn != null) values.put("correct_answer_en", correctAnswerEn);
+        if (explanationVi != null) values.put("explanation_vi", explanationVi);
+        if (explanationEn != null) values.put("explanation_en", explanationEn);
         values.put("created_at", System.currentTimeMillis());
-        return getWritableDatabase().insert("wrong_questions", null, values);
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            long rowId = -1;
+            try (android.database.Cursor existing = db.query("wrong_questions", new String[]{"id"},
+                    "question_id = ? AND grade = ?",
+                    new String[]{String.valueOf(questionId), String.valueOf(grade)},
+                    null, null, "id DESC", "1")) {
+                if (existing.moveToFirst()) rowId = existing.getLong(0);
+            }
+            long result;
+            if (rowId >= 0) {
+                db.update("wrong_questions", values, "id = ?", new String[]{String.valueOf(rowId)});
+                result = rowId;
+            } else {
+                result = db.insertOrThrow("wrong_questions", null, values);
+            }
+            db.setTransactionSuccessful();
+            return result;
+        } finally {
+            db.endTransaction();
+        }
     }
     public int getAttemptCount() {
         return getInt("SELECT COUNT(*) FROM attempts");
@@ -140,8 +183,9 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         return getReadableDatabase().query(
                 "wrong_questions",
                 new String[]{"question_id", "grade", "question_vi", "question_en", "correct_answer",
-                        "correct_answer_vi", "correct_answer_en"},
-                grade == 0 ? null : "grade = ?",
+                        "correct_answer_vi", "correct_answer_en", "explanation_vi", "explanation_en"},
+                "id IN (SELECT MAX(id) FROM wrong_questions GROUP BY grade, question_id)"
+                        + (grade == 0 ? "" : " AND grade = ?"),
                 grade == 0 ? null : new String[]{String.valueOf(grade)},
                 null, null, "created_at DESC, id DESC");
     }

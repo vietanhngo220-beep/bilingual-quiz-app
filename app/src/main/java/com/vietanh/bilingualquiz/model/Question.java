@@ -14,6 +14,15 @@ public class Question {
     public String[] options;
     public int correctIndex;
     public String explanation;
+    public String explanationVi;
+    public String explanationEn;
+
+    public String getExplanation(boolean vietnamese) {
+        String localized = vietnamese ? explanationVi : explanationEn;
+        if (localized != null && !localized.trim().isEmpty()) return localized;
+        // Legacy data has one explanation with no declared language.
+        return vietnamese && explanation != null ? explanation : "";
+    }
 
     public Question() {
         options = new String[OPTION_COUNT];

@@ -1,6 +1,8 @@
 package com.vietanh.bilingualquiz.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.widget.Button;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.graphics.Color;
@@ -105,12 +107,22 @@ public class WrongQuestionsActivity extends Activity {
             while (cursor.moveToNext()) {
                 TextView item = new TextView(this);
                 item.setText("\n" + number + ". " + (vi ? "Lớp " : "Grade ") + cursor.getInt(1) + "\n" +
-                        (vi ? cursor.getString(2) : cursor.getString(3)) +
-                        "\n" + (vi ? "Đáp án đúng: " : "Correct answer: ")
-                                + getSavedAnswer(cursor, repository, sourceByGrade));
+                        (vi ? cursor.getString(2) : cursor.getString(3)));
+                String answer = getSavedAnswer(cursor, repository, sourceByGrade);
+                String explanation = getSavedExplanation(cursor, repository, sourceByGrade);
+                String questionText = vi ? cursor.getString(2) : cursor.getString(3);
+                Button details = new Button(this);
+                details.setText(vi ? "Xem đáp án và giải thích" : "View answer and explanation");
+                details.setOnClickListener(view -> new AlertDialog.Builder(this)
+                        .setTitle(vi ? "Chi tiết câu sai" : "Wrong question details")
+                        .setMessage(questionText + "\n\n"
+                                + (vi ? "Đáp án đúng: " : "Correct answer: ") + answer
+                                + "\n\n" + (vi ? "Giải thích: " : "Explanation: ") + explanation)
+                        .setPositiveButton(vi ? "Đóng" : "Close", null).show());
                 item.setTextSize(17);
                 item.setTextColor(Color.DKGRAY);
                 questionList.addView(item);
+                questionList.addView(details);
                 number++;
             }
 
@@ -127,6 +139,31 @@ public class WrongQuestionsActivity extends Activity {
         } finally {
             database.close();
         }
+    }
+
+    private String getSavedExplanation(Cursor cursor, QuestionRepository repository,
+                                       Map<Integer, List<Question>> sourceByGrade) {
+        String saved = cursor.getString(vi ? 7 : 8);
+        if (saved != null && !saved.trim().isEmpty()) return saved;
+        int grade = cursor.getInt(1);
+        if (!sourceByGrade.containsKey(grade)) {
+            sourceByGrade.put(grade, repository.getSampleQuestions(grade));
+        }
+        for (Question source : sourceByGrade.get(grade)) {
+            if (source.id == cursor.getInt(0) && source.grade == grade
+                    && Objects.equals(source.questionVi, cursor.getString(2))
+                    && Objects.equals(source.questionEn, cursor.getString(3))
+                    && (Objects.equals(source.getCorrectAnswer(true), cursor.getString(5))
+                        || Objects.equals(source.getCorrectAnswer(false), cursor.getString(6))
+                        || Objects.equals(source.getCorrectAnswer(), cursor.getString(4))
+                        || Objects.equals(source.getCorrectAnswer(true), cursor.getString(4))
+                        || Objects.equals(source.getCorrectAnswer(false), cursor.getString(4)))) {
+                String explanation = source.getExplanation(vi);
+                if (!explanation.trim().isEmpty()) return explanation;
+            }
+        }
+        return vi ? "Chưa có giải thích bằng tiếng Việt cho câu hỏi này."
+                : "No English explanation is available for this question.";
     }
 
     private int dp(int value) {
