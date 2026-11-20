@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 /** Stores quiz attempts and questions answered incorrectly. */
 public class QuizDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "bilingual_quiz.db";
+    // Keep the schema compatible when switching between main and the statistics branch.
     private static final int DATABASE_VERSION = 3;
 
     public QuizDbHelper(Context context) {

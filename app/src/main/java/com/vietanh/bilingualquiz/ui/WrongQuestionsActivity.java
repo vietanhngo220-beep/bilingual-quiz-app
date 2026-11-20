@@ -5,14 +5,11 @@ import android.app.AlertDialog;
 import android.widget.Button;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.graphics.Color;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.ScrollView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import com.vietanh.bilingualquiz.data.QuizDbHelper;
 import com.vietanh.bilingualquiz.LanguageSettings;
 import com.vietanh.bilingualquiz.data.QuestionRepository;
@@ -34,29 +31,11 @@ public class WrongQuestionsActivity extends Activity {
         vi = LanguageSettings.isVietnamese(this);
         selectedGrade = savedInstanceState == null ? 0
                 : savedInstanceState.getInt(SELECTED_GRADE, 0);
-        ScrollView scroll = new ScrollView(this);
-        LinearLayout screen = new LinearLayout(this);
-        screen.setOrientation(LinearLayout.VERTICAL);
-        screen.setPadding(dp(24), dp(24), dp(24), dp(24));
-        scroll.addView(screen);
-        screen.setOnApplyWindowInsetsListener((view, insets) -> {
-            view.setPadding(dp(24) + insets.getSystemWindowInsetLeft(),
-                    dp(24) + insets.getSystemWindowInsetTop(),
-                    dp(24) + insets.getSystemWindowInsetRight(),
-                    dp(24) + insets.getSystemWindowInsetBottom());
-            return insets;
-        });
-
-        TextView title = new TextView(this);
-        title.setText(vi ? "Câu hỏi sai" : "Wrong questions");
-        title.setTextSize(24);
-        title.setTextColor(Color.rgb(20, 60, 120));
-        screen.addView(title);
-
-        TextView filterLabel = new TextView(this);
-        filterLabel.setText(vi ? "Lọc theo lớp" : "Filter by grade");
-        filterLabel.setPadding(0, dp(16), 0, dp(4));
-        screen.addView(filterLabel);
+        LinearLayout screen = AppUi.screen(this, vi ? "Câu hỏi sai" : "Wrong questions", true);
+        LinearLayout filterCard = AppUi.card(this);
+        AppUi.add(filterCard, AppUi.text(this, vi ? "Lọc theo lớp" : "Filter by grade",
+                14, AppUi.MUTED, true), 0);
+        AppUi.add(screen, filterCard, 20);
 
         String[] grades = new String[13];
         grades[0] = vi ? "Tất cả lớp" : "All grades";
@@ -70,12 +49,12 @@ public class WrongQuestionsActivity extends Activity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         gradeFilter.setAdapter(adapter);
         gradeFilter.setSelection(selectedGrade);
-        screen.addView(gradeFilter, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)));
+        gradeFilter.setMinimumHeight(AppUi.dp(this, 48));
+        AppUi.add(filterCard, gradeFilter, 4);
 
         questionList = new LinearLayout(this);
         questionList.setOrientation(LinearLayout.VERTICAL);
-        screen.addView(questionList);
+        AppUi.add(screen, questionList, 4);
         gradeFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -87,8 +66,6 @@ public class WrongQuestionsActivity extends Activity {
             public void onNothingSelected(AdapterView<?> parent) { }
         });
         showWrongQuestions();
-        setContentView(scroll);
-        screen.requestApplyInsets();
     }
 
     @Override
@@ -105,36 +82,38 @@ public class WrongQuestionsActivity extends Activity {
         try (Cursor cursor = database.getWrongQuestions(selectedGrade)) {
             int number = 1;
             while (cursor.moveToNext()) {
-                TextView item = new TextView(this);
-                item.setText("\n" + number + ". " + (vi ? "Lớp " : "Grade ") + cursor.getInt(1) + "\n" +
-                        (vi ? cursor.getString(2) : cursor.getString(3)));
+                LinearLayout card = AppUi.card(this);
+                AppUi.add(card, AppUi.text(this,
+                        number + ". " + (vi ? "Lớp " : "Grade ") + cursor.getInt(1),
+                        14, AppUi.BLUE, true), 0);
+                AppUi.add(card, AppUi.text(this,
+                        vi ? cursor.getString(2) : cursor.getString(3),
+                        18, AppUi.TEXT, true), 12);
                 String answer = getSavedAnswer(cursor, repository, sourceByGrade);
                 String explanation = getSavedExplanation(cursor, repository, sourceByGrade);
                 String questionText = vi ? cursor.getString(2) : cursor.getString(3);
-                Button details = new Button(this);
-                details.setText(vi ? "Xem đáp án và giải thích" : "View answer and explanation");
+                Button details = AppUi.button(this,
+                        vi ? "Xem đáp án và giải thích" : "View answer and explanation", false);
                 details.setOnClickListener(view -> new AlertDialog.Builder(this)
                         .setTitle(vi ? "Chi tiết câu sai" : "Wrong question details")
                         .setMessage(questionText + "\n\n"
                                 + (vi ? "Đáp án đúng: " : "Correct answer: ") + answer
                                 + "\n\n" + (vi ? "Giải thích: " : "Explanation: ") + explanation)
                         .setPositiveButton(vi ? "Đóng" : "Close", null).show());
-                item.setTextSize(17);
-                item.setTextColor(Color.DKGRAY);
-                questionList.addView(item);
-                questionList.addView(details);
+                AppUi.add(card, details, 16);
+                AppUi.add(questionList, card, 12);
                 number++;
             }
 
             if (number == 1) {
-                TextView empty = new TextView(this);
-                empty.setText(selectedGrade == 0
-                        ? (vi ? "\nChưa có câu sai được lưu.\nHãy hoàn thành một bài luyện tập trước."
-                                : "\nNo wrong questions saved.\nComplete a practice quiz first.")
-                        : (vi ? "\nChưa có câu sai được lưu cho lớp " + selectedGrade + "."
-                                : "\nNo wrong questions saved for grade " + selectedGrade + "."));
-                empty.setTextSize(18);
-                questionList.addView(empty);
+                LinearLayout empty = AppUi.card(this);
+                AppUi.add(empty, AppUi.text(this, selectedGrade == 0
+                        ? (vi ? "Chưa có câu sai được lưu.\nHãy hoàn thành một bài luyện tập trước."
+                                : "No wrong questions saved.\nComplete a practice quiz first.")
+                        : (vi ? "Chưa có câu sai được lưu cho lớp " + selectedGrade + "."
+                                : "No wrong questions saved for grade " + selectedGrade + "."),
+                        16, AppUi.MUTED, false), 0);
+                AppUi.add(questionList, empty, 12);
             }
         } finally {
             database.close();
@@ -164,10 +143,6 @@ public class WrongQuestionsActivity extends Activity {
         }
         return vi ? "Chưa có giải thích bằng tiếng Việt cho câu hỏi này."
                 : "No English explanation is available for this question.";
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private String getSavedAnswer(Cursor cursor, QuestionRepository repository,
