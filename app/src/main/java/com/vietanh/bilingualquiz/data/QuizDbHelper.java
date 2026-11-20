@@ -8,7 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 /** Stores quiz attempts and questions answered incorrectly. */
 public class QuizDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "bilingual_quiz.db";
-    private static final int DATABASE_VERSION = 1;
+    // Keep the schema compatible when switching between main and the statistics branch.
+    private static final int DATABASE_VERSION = 3;
 
     public QuizDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -23,14 +24,21 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE wrong_questions (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, question_id INTEGER NOT NULL, " +
                 "grade INTEGER NOT NULL, question_vi TEXT NOT NULL, question_en TEXT, " +
-                "correct_answer TEXT, created_at INTEGER NOT NULL)");
+                "correct_answer TEXT, correct_answer_vi TEXT, correct_answer_en TEXT, " +
+                "explanation_vi TEXT, explanation_en TEXT, " +
+                "created_at INTEGER NOT NULL)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS attempts");
-        db.execSQL("DROP TABLE IF EXISTS wrong_questions");
-        onCreate(db);
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_vi TEXT");
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN correct_answer_en TEXT");
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN explanation_vi TEXT");
+            db.execSQL("ALTER TABLE wrong_questions ADD COLUMN explanation_en TEXT");
+        }
     }
 
     public long saveAttempt(int grade, int score, int total) {

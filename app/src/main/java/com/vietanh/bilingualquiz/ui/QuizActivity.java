@@ -2,7 +2,10 @@ package com.vietanh.bilingualquiz.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.graphics.Color;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.StateListDrawable;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import com.vietanh.bilingualquiz.LanguageSettings;
 import com.vietanh.bilingualquiz.data.QuestionRepository;
@@ -27,38 +30,50 @@ public class QuizActivity extends Activity {
 
     private void showQuestion() {
         question = new QuestionRepository(this).getSampleQuestions(grade).get(0);
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(32, 32, 32, 32);
-
-        title = new TextView(this);
-        title.setText("Ôn tập lớp " + grade + " / Practice grade " + grade);
-        title.setTextSize(22);
-        title.setTextColor(Color.rgb(20, 60, 120));
-        root.addView(title);
-
-        prompt = new TextView(this);
         boolean vietnamese = LanguageSettings.isVietnamese(this);
-        title.setText(vietnamese ? "Ôn tập lớp " + grade : "Practice grade " + grade);
-        prompt.setText(vietnamese ? question.questionVi : question.questionEn);
-        prompt.setTextSize(18);
-        prompt.setPadding(0, 40, 0, 20);
-        root.addView(prompt);
+        root = AppUi.screen(this, (vietnamese ? "Ôn tập lớp " : "Practice grade ") + grade, true);
+        AppUi.add(root, AppUi.text(this, vietnamese ? "Chọn một đáp án rồi nộp bài."
+                : "Choose one answer, then submit.", 15, AppUi.MUTED, false), 8);
+
+        LinearLayout questionCard = AppUi.card(this);
+        AppUi.add(questionCard, AppUi.text(this, vietnamese ? "CÂU HỎI" : "QUESTION",
+                12, AppUi.BLUE, true), 0);
+        prompt = AppUi.text(this, vietnamese ? question.questionVi : question.questionEn,
+                20, AppUi.TEXT, true);
+        AppUi.add(questionCard, prompt, 12);
+        AppUi.add(root, questionCard, 20);
 
         choices = new RadioGroup(this);
+        int[][] tintStates = new int[][]{
+                new int[]{android.R.attr.state_checked}, new int[]{}
+        };
+        ColorStateList radioTint = new ColorStateList(tintStates,
+                new int[]{AppUi.BLUE, AppUi.MUTED});
         for (int index = 0; index < question.options.length; index++) {
             RadioButton choice = new RadioButton(this);
+            choice.setId(View.generateViewId());
             choice.setText(question.getOption(index, vietnamese));
             choice.setTextSize(16);
-            choices.addView(choice);
+            choice.setTextColor(AppUi.TEXT);
+            choice.setButtonTintList(radioTint);
+            choice.setMinHeight(AppUi.dp(this, 56));
+            choice.setPadding(AppUi.dp(this, 12), AppUi.dp(this, 12),
+                    AppUi.dp(this, 12), AppUi.dp(this, 12));
+            StateListDrawable background = new StateListDrawable();
+            background.addState(new int[]{android.R.attr.state_checked},
+                    AppUi.background(this, AppUi.LIGHT_BLUE, 14));
+            background.addState(new int[]{}, AppUi.background(this, AppUi.SURFACE, 14));
+            choice.setBackground(background);
+            RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.topMargin = AppUi.dp(this, 10);
+            choices.addView(choice, params);
         }
-        root.addView(choices);
+        AppUi.add(root, choices, 8);
 
-        submit = new Button(this);
-        submit.setText(vietnamese ? "Nộp bài" : "Submit");
+        submit = AppUi.button(this, vietnamese ? "Nộp bài" : "Submit", true);
         submit.setOnClickListener(view -> submitAnswer());
-        root.addView(submit);
-        setContentView(root);
+        AppUi.add(root, submit, 24);
     }
 
     private void submitAnswer() {
